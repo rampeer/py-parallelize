@@ -5,6 +5,7 @@ from warnings import warn
 import pandas as pd
 import numpy as np
 import multiprocessing
+import traceback
 
 
 class StoppableThread(Thread):
@@ -28,7 +29,7 @@ class StoppableThread(Thread):
                 self.results.append(self.fun(item))
             except Exception:
                 self.results.append(None)
-                warn("Exception %s processing element %s" % (str(sys.exc_info()[0]), str(item)))
+                warn("Exception %s processing element %s" % (repr(sys.exc_info()[1]), str(item)))
             if self.callback is not None:
                 if self.current_index % self.callback_each == 0:
                     self.callback()
