@@ -5,7 +5,6 @@ from warnings import warn
 import pandas as pd
 import numpy as np
 import multiprocessing
-import traceback
 
 
 class StoppableThread(Thread):
@@ -68,7 +67,7 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
         def report():
             lock.acquire()
             total = int(sum([len(t.items) for t in threads]))
-            current = int(sum([t.current_index + 1.0 for t in threads]))
+            current = int(sum([t.current_index + 1.0 if len(t.items) > 0 else 0 for t in threads]))
             message = "[{0: <40}] {1} / {2} ({3: .2%})".format(
                 "#" * int(current / total * 40),
                 current,
