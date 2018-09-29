@@ -29,7 +29,7 @@ class StoppableThread(Thread):
                 self.results.append(self.fun(item))
             except Exception:
                 self.results.append(None)
-                warn("Exception %s processing element %s" % (repr(sys.exc_info()[1]), str(item)))
+                warn("%s processing element %s" % (repr(sys.exc_info()[1]), str(item)))
             if self.callback is not None:
                 if self.current_index % self.callback_each == 0:
                     self.callback()
@@ -56,9 +56,14 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
     def _progressbar_callback():
         def report():
             lock.acquire()
-            progress = [(t.current_index + 1) / len(t.items) if len(t.items) > 0 else 1.0 for t in threads]
-            message = ["{0: <8.2%}".format(x) for x in progress]
-            print(" ".join(message), end="\r", file=sys.stderr, flush=True)
+            total = int(sum([len(t.items) for t in threads]))
+            current = int(sum([t.current_index + 1.0 for t in threads]))
+            message = "[{0: <40}] {1} / {2} ({3: .2%})".format(
+                "#" * int(current / total * 40),
+                current,
+                total,
+                current / total)
+            print(message, end="\r", file=sys.stderr, flush=True)
             lock.release()
 
         return report
