@@ -23,6 +23,16 @@ class MyTestCase(unittest.TestCase):
         y = parallelize(x, fun)
         self.assertEqual(y, [10, 5, None, 2])
 
+        try:
+            y = parallelize(x, fun, continue_on_exception=False)
+            self.assertTrue(False)
+        except ZeroDivisionError:
+            pass
+
+        obj = object()
+        y = parallelize(x, fun, exception_impute=obj)
+        self.assertEqual(y[2], obj)
+
     def test_order(self):
         def fun(x):
             sleep(x)

@@ -9,7 +9,9 @@ import traceback
 
 
 class StoppableThread(Thread):
-    def __init__(self, fun: Callable, items: Iterable, callback: Callable = None, callback_each: int = 1):
+    def __init__(self, fun: Callable, items: Iterable,
+                 callback: Callable = None, callback_each: int = 1,
+                 continue_on_exception: bool = False, exception_impute = None, exception_callback: Callable = None):
         super().__init__()
         self.callback = callback
         self.callback_each = callback_each
@@ -18,6 +20,10 @@ class StoppableThread(Thread):
         self.running = False
         self.current_index = 0
         self.results = []
+        self.continue_on_exception = continue_on_exception
+        self.exception_impute = exception_impute
+        self.exception = None
+        self.exception_callback = exception_callback
 
     def run(self):
         self.running = True
@@ -27,8 +33,12 @@ class StoppableThread(Thread):
                 break
             try:
                 self.results.append(self.fun(item))
-            except Exception:
-                self.results.append(None)
+            except Exception as e:
+                if not self.continue_on_exception:
+                    self.exception = e
+                    self.exception_callback()
+                    break
+                self.results.append(self.exception_impute)
                 warn("%s processing element %s" % (repr(sys.exc_info()[1]), str(item)))
             if self.callback is not None:
                 if self.current_index % self.callback_each == 0:
@@ -37,15 +47,16 @@ class StoppableThread(Thread):
 
 
 def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progressbar: bool = True,
-                progressbar_tick: int = 1):
+                progressbar_tick: int = 1, continue_on_exception: bool = True, exception_impute = None):
     """
     This function iterates (in multithreaded fashion) over `items` and calls `fun` for each item.
-    :param progressbar_tick:
-    :param progressbar:
-    :param items:
-    :param fun:
-    :param thread_count:
-    :return:
+    :param items: items to process.
+    :param fun: function to apply to each `items` element.
+    :param progressbar: should progressbar be displayed?
+    :param progressbar_tick: how often should we update progressbar?
+    :param thread_count: how many threads should be allocated? If None, this parameter will be chosen automatically.
+    :param continue_on_exception: if True, it will print warning if `fun` fails on some element, instead of halting
+    :param exception_impute: which value should be put into output if `fun` throws an exception?
     """
 
     if thread_count is None:
@@ -68,12 +79,18 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
 
         return report
 
+    def _stop_all_threads():
+        for t in threads:
+            t.running = False
+
     items_split = np.array_split(items, thread_count)
     if progressbar:
         callback = _progressbar_callback()
     else:
         callback = None
-    threads = [StoppableThread(fun, x, callback, progressbar_tick) for x in items_split]
+    threads = [StoppableThread(fun, x,
+                               callback, progressbar_tick,
+                               continue_on_exception, exception_impute, _stop_all_threads) for x in items_split]
     for t in threads:
         t.start()
     try:
@@ -81,12 +98,18 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
             t.join()
     except KeyboardInterrupt:
         print("Interrupting threads...")
-        for t in threads:
-            t.running = False
+        _stop_all_threads()
+        # We have to wait for all threads to process their current elements
         for t in threads:
             t.join()
     if callback is not None:
         callback()
+
+    # Any exceptions?
+    for t in threads:
+        if t.exception is not None:
+            raise t.exception
+
     collected_results = [item for thread in threads for item in thread.results]
 
     if isinstance(items, pd.Series):
