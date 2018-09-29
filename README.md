@@ -1,7 +1,7 @@
 # Parallelize
 
 This package lets you parallelize computations, in parallel-map fashion.
-It's just like parallel for!
+It's just like parallel `for`!
 
 # Features
 
@@ -31,10 +31,10 @@ but the function `some_fun` is executed in multithreaded fashion.
 
 # Installation
 
-Clone repo; run
+Run
 
-`python3 setup.py install --user`
+`pip3 install git+https://github.com/rampeer/py-parallelize --user`
 
 or
 
-`sudo python3 setup.py install`
+`sudo pip3 install git+https://github.com/rampeer/py-parallelize`
