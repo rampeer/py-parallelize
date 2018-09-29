@@ -1,7 +1,8 @@
 # Parallelize
 
 This package lets you parallelize computations, in parallel-map fashion.
-It's just like parallel `for`!
+
+![Screenshot](screenshot.png)
 
 # Features
 
