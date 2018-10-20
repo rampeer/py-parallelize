@@ -19,22 +19,6 @@ productively by getting used to verbose but fantastic [ipyparallel](https://ipyp
 - you are operating primarily with numpy arrays / vectorized operations. [Numba](http://numba.pydata.org/) is a great 
 fit for such tasks.
 
-# Examples
-
-```
-x = [1, 2, 3]
-y = parallelize(x, some_fun)
-```
-
-Is equivalent to
-
-```
-x = [1, 2, 3]
-y = [some_fun(i) for i in x]
-```
-
-but the function `some_fun` is executed in multithreaded fashion.
-
 # Features
 
 What's the difference between this and \<insert package name\>?
@@ -44,6 +28,44 @@ Well, unlike alternatives and homebrew solutions, this package:
 - Works in Wandows
 - Continues working if stumbled upon occasional exception (i.e. you won't have to rerun whole process just because record #451673 out of 100M is broken)
 - Properly works with Series
+
+# Examples
+
+## Parallelizing map and list comprehension
+
+```
+def some_fun(x):
+    return x ** 2
+x = [1, 2, 3]
+
+# Single-thread variants
+y = [some_fun(i) for i in x]
+y = map(some_fun(i) for i in x)
+
+# Parallelized variant
+y = parallelize(x, some_fun)
+```
+
+## Parallel for
+It is a bit clumsy to use because it requires multithreading.Manager to create
+process-shared lists, but so far it's best way to implement `pfor`.
+
+```
+# Single-thread variant
+result = []
+for x in range(10):
+    result.append(x ** 2)
+print(result)
+    
+# Parallelized variant
+from multithreading import Manager
+
+with Manager() as m:
+    l = m.list()
+    for x in pfor(range(10)):
+        l.append(x ** 2)
+    print(l)
+```
 
 # What's under the hood?
 
