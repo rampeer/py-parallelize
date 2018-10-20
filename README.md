@@ -11,7 +11,7 @@ It is a:
 - nice choice if your data does not fit into dask's data model, but you do not want to write enormous amounts of code
 using raw joblib/multitask/ipyparallel : everything is wrapped neatly here
 
-It is **NOT** a great idea to you this package if:
+It is **NOT** a great idea to use this package if:
 - you will rely heavily on parallel computations, or need something more than plain `map` (for example, computation graphs). 
 Please refer to [dask](https://dask.org/), as it provides mode functionality.
 - you are starting project from scratch, using Jupyter and have a spare hour or two. In this case please spend this time
