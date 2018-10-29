@@ -1,3 +1,4 @@
-__all__ = ['parallelize', 'StoppableThread']
+name = "pyparallelize"
+__all__ = ['parallelize', 'StoppableThread', 'pfor']
 
-from .threaded import StoppableThread, parallelize
+from .threaded import StoppableThread, parallelize, pfor
