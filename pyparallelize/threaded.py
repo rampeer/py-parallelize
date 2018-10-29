@@ -109,6 +109,7 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
             t.join()
     if callback is not None:
         callback()
+        print("\n")
 
     # Any exceptions?
     for t in threads:
