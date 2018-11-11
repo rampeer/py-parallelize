@@ -33,7 +33,7 @@ Well, unlike alternatives and homebrew solutions, this package:
 
 ## Parallelizing map and list comprehension
 
-```
+```python
 def some_fun(x):
     return x ** 2
 x = [1, 2, 3]
@@ -46,11 +46,50 @@ y = map(some_fun(i) for i in x)
 y = parallelize(x, some_fun)
 ```
 
+A bit more practical example. This snippet loads images from URLs, resizes them, and transforms into a feature vector
+using VGG19 pre-trained on Imagenet.
+
+```python
+import tensorflow as tf
+from pyparallelize import parallelize
+import keras.applications.vgg19 as vgg
+from skimage.io import imread
+import cv2
+import numpy as np
+
+graph = tf.get_default_graph()
+inception_model = vgg.VGG19(weights='imagenet', include_top=False)
+
+def process_image(img_full_path):
+    # We have to reattach the graph (because it was created in different thread).
+    # Otherwise a <Tensor ... is not an element of this graph> exception will be raised
+    with graph.as_default():
+        img = imread(img_full_path)
+        target_size = (128, 128)
+        img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_CUBIC)
+        img = np.array([img]).astype(np.float)
+        img = vgg.preprocess_input(img)
+        vector = np.array(inception_model.predict(img)).reshape(8192)
+        return vector
+
+urls = [
+    "https://upload.wikimedia.org/wikipedia/commons/c/c4/Savannah_Cat_portrait.jpg",
+    "https://upload.wikimedia.org/wikipedia/commons/4/40/BEN_Bengalian_kitten_%284492540155%29.jpg",
+    "http://an-url-that-does-not-exist.com/",
+    "https://upload.wikimedia.org/wikipedia/commons/7/7b/Cat_Janna.jpg"
+]
+
+# We can set number of threads to a number greater than number of CPUs because it's most likely that image downloading
+# will be the bottleneck.
+x = parallelize(urls, process_image, thread_count=25)
+x
+```
+
 ## Parallel for
 It is a bit clumsy to use because it requires multithreading.Manager to create
 process-shared lists, but so far it's best way to implement `pfor`.
 
-```
+```python
 # Single-thread variant
 result = []
 for x in range(10):
