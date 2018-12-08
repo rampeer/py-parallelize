@@ -4,6 +4,7 @@ import sys
 from multiprocessing import Queue
 from queue import Empty
 from threading import Thread, Lock
+from time import time
 from typing import Callable, Iterable
 from warnings import warn
 
@@ -52,7 +53,8 @@ class StoppableThread(Thread):
 
 
 def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progressbar: bool = True,
-                progressbar_tick: int = 1, continue_on_exception: bool = True, exception_impute=None):
+                progressbar_tick: int = 1, continue_on_exception: bool = True, exception_impute=None,
+                display_eta: bool = True):
     """
     This function iterates (in multithreaded fashion) over `items` and calls `fun` for each item.
     :param items: items to process.
@@ -61,7 +63,8 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
     :param progressbar_tick: how often should we update progressbar?
     :param thread_count: how many threads should be allocated? If None, this parameter will be chosen automatically.
     :param continue_on_exception: if True, it will print warning if `fun` fails on some element, instead of halting
-    :param exception_impute: which value should be put into output if `fun` throws an exception?
+    :param exception_impute: which value should be put into output when `fun` throws an exception?
+    :param display_eta: Should an estimation of remaining time be displayed?
     """
 
     if thread_count is None:
@@ -74,11 +77,18 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
             lock.acquire()
             total = int(sum([len(t.items) for t in threads]))
             current = int(sum([t.current_index + 1.0 if len(t.items) > 0 else 0 for t in threads]))
+
+            if current > 0:
+                eta = (time() - start_time) / current * (total - current)
+            else:
+                eta = 0
             message = "[{0: <40}] {1} / {2} ({3: .2%})".format(
                 "#" * int(current / total * 40),
                 current,
                 total,
                 current / total)
+            if display_eta:
+                message += " (ETA: {0}s)      ".format(round(eta))
             print(message, end="\r", file=sys.stderr, flush=True)
             lock.release()
 
@@ -96,6 +106,7 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
     threads = [StoppableThread(fun, x,
                                callback, progressbar_tick,
                                continue_on_exception, exception_impute, _stop_all_threads) for x in items_split]
+    start_time = time()
     for t in threads:
         t.start()
     try:
