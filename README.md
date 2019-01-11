@@ -1,4 +1,4 @@
-# Parallelize
+# py-parallelize
 
 This package lets you parallelize computations.
 
@@ -18,16 +18,6 @@ Please refer to [dask](https://dask.org/), as it provides mode functionality.
 productively by getting used to verbose but fantastic [ipyparallel](https://ipyparallel.readthedocs.io/en/latest/) API.
 - you are operating primarily with numpy arrays / vectorized operations. [Numba](http://numba.pydata.org/) is a great 
 fit for such tasks.
-
-# Features
-
-What's the difference between this and \<insert package name\>?
-Well, unlike alternatives and homebrew solutions, this package:
-- Has progressbar!
-- Does not crash when stopped using Ctrl+C or "Stop" button in Jupyter
-- Works in Wandows
-- Continues working if stumbled upon occasional exception (i.e. you won't have to rerun whole process just because record #451673 out of 100M is broken)
-- Properly works with Series
 
 # Examples
 
@@ -105,6 +95,16 @@ with Manager() as m:
         l.append(x ** 2)
     print(l)
 ```
+
+# Features
+
+What's the difference between this and \<insert package name\>?
+Well, unlike alternatives and homebrew solutions, this package:
+- Has progressbar!
+- Does not crash when stopped using Ctrl+C or "Stop" button in Jupyter
+- Works in Wandows
+- Continues working if stumbled upon occasional exception (i.e. you won't have to rerun whole process just because record #451673 out of 100M is broken)
+- Properly works with Series
 
 # What's under the hood?
 
