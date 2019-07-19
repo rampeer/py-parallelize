@@ -16,7 +16,7 @@ class MyTestCase(unittest.TestCase):
         return sleep(0.1)
 
     def mixed_fun(self, x):
-        x = np.random.normal(0.0, 1.0, (1000, 1000))
+        x = np.random.normal(0.0, 1e-5, (1000, 1000))
         for _ in range(10):
             x = np.multiply(x, x)
 
