@@ -75,10 +75,10 @@ def parallelize(items: Iterable, fun: Callable, thread_count: int = None, progre
             total = int(sum([len(t.items) for t in threads]))
             current = int(sum([t.current_index + 1.0 if len(t.items) > 0 else 0 for t in threads]))
             message = "[{0: <40}] {1} / {2} ({3: .2%})".format(
-                "#" * int(current / total * 40),
+                "#" * int(current / max(total, 1) * 40),
                 current,
                 total,
-                current / total)
+                current / max(total, 1))
             print(message, end="\r", file=sys.stderr, flush=True)
             lock.release()
 

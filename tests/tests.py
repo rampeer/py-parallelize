@@ -33,6 +33,10 @@ class MyTestCase(unittest.TestCase):
         y = parallelize(x, fun, exception_impute=obj)
         self.assertEqual(y[2], obj)
 
+    def test_empty(self):
+        e = parallelize([], lambda x: x)
+        self.assertEqual(len(e), 0)
+
     def test_order(self):
         def fun(x):
             sleep(x)

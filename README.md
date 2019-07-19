@@ -26,7 +26,8 @@ Well, unlike alternatives and homebrew solutions, this package:
 - Has progressbar!
 - Does not crash when stopped using Ctrl+C or "Stop" button in Jupyter
 - Works in Wandows
-- Continues working if stumbled upon occasional exception (i.e. you won't have to rerun whole process just because record #451673 out of 100M is broken)
+- Continues working if stumbled upon occasional exception (i.e. you won't have to rerun whole process just because 
+record #45163 out of 100M is broken)
 - Properly works with Series
 
 # Examples
